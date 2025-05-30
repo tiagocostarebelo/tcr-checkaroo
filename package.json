@@ -1,5 +1,5 @@
 {
-  "name": "tcr-todo-app",
+  "name": "checkaroo",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -14,6 +14,7 @@
     "express": "^5.1.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "prisma": "^6.8.2"
   }
 }
