@@ -32,82 +32,110 @@ This app is built as a real-world project to showcase full-stack development ski
 
 ---
 
-## Current Project Status: Milestone 1 Complete
-
-- ✅ Initialized project directory
-- ✅ Set up Node.js + Express structure
-- ✅ Installed core dependencies
-- ✅ Chose Supabase for database (hosted PostgreSQL)
-- ✅ Installed and set up Prisma ORM
-- ✅ GitHub repo initialized and first commit done
-- ✅ Set up `.env` and development environment
-- ✅ Created folder structure: `/controllers`, `/routes`, `/services`, `/models`
-- ✅ Added `.env.example` for deployment readiness
-
----
-
 ## Entity Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
-  User ||--o{ Task : has
-  User ||--o{ Label : creates
-  Task ||--o{ TaskLabel : tagged_with
-  Task ||--o{ Reminder : has
-  Task ||--o{ Comment : receives
-  Task ||--o{ Task : has_subtask
-  User ||--o{ Comment : writes
 
   User {
-    uuid id PK
+    string id PK
     string firstName
     string lastName
-    string email
+    string email "unique"
     string passwordHash
-    timestamp createdAt
-    timestamp updatedAt
+    datetime createdAt
+    datetime updatedAt
   }
 
   Task {
-    uuid id PK
-    uuid userId FK
+    string id PK
     string title
-    string description
-    date dueDate
-    boolean isCompleted
-    uuid parentTaskId FK
-    timestamp createdAt
-    timestamp updatedAt
+    string description "nullable"
+    datetime dueDate "nullable"
+    TaskStatus status "DEFAULT PENDING"
+    TaskPriority priority "DEFAULT MEDIUM"
+    boolean isCompleted "DEFAULT false"
+    datetime createdAt
+    datetime updatedAt
+    string userId FK
+    string parentTaskId "nullable" FK
   }
 
   Label {
-    uuid id PK
-    uuid userId FK
+    string id PK
     string name
     string color
-    timestamp createdAt
+    datetime createdAt
+    datetime updatedAt
+    string userId FK
   }
 
   TaskLabel {
-    uuid id PK
-    uuid taskId FK
-    uuid labelId FK
+    string id PK
+    string taskId FK
+    string labelId FK
+    %% @@unique([taskId, labelId]) is implied by PK on (taskId, labelId) if we used composite PK.
+    %% With separate 'id PK' on TaskLabel, unique constraint still needed.
+    %% Mermaid doesn't have a direct way to show '@@unique' other than notes or PK.
   }
 
   Reminder {
-    uuid id PK
-    uuid taskId FK
-    timestamp remindAt
-    boolean isSent
+    string id PK
+    datetime remindAt
+    boolean isSent "DEFAULT false"
+    datetime createdAt
+    datetime updatedAt
+    string taskId FK
   }
 
   Comment {
-    uuid id PK
-    uuid taskId FK
-    uuid userId FK
+    string id PK
     string content
-    timestamp createdAt
+    datetime createdAt
+    datetime updatedAt
+    string taskId FK
+    string userId FK
   }
+
+  TaskStatus {
+    enum PENDING
+    enum IN_PROGRESS
+    enum COMPLETED
+    enum ARCHIVED
+  }
+
+  TaskPriority {
+    enum LOW
+    enum MEDIUM
+    enum HIGH
+    enum URGENT
+  }
+
+  User ||--o{ Task : "has"
+  User ||--o{ Label : "creates"
+  User ||--o{ Comment : "writes"
+
+  Task ||--o{ TaskLabel : "is labeled by"
+  Task ||--o{ Reminder : "has"
+  Task ||--o{ Comment : "has"
+  Task }o--|| Task : "is subtask of / has subtasks" %% Self-referencing for parent/subtasks
+
+  Label ||--o{ TaskLabel : "labels"
+
+  %% Explicitly linking Enums to Task (though not a standard ERD relation, helps visualize)
+  %% Task .. TaskStatus : "uses status"
+  %% Task .. TaskPriority : "uses priority"
+  %% The above enum links might clutter. The type directly on Task attribute is often sufficient.
+
+  %% Notes on FKs and onDelete (Mermaid doesn't directly support this on relation lines)
+  %% Task.userId -> User.id (onDelete: Cascade)
+  %% Task.parentTaskId -> Task.id (onDelete: SetNull)
+  %% Label.userId -> User.id (onDelete: Cascade)
+  %% TaskLabel.taskId -> Task.id (onDelete: Cascade)
+  %% TaskLabel.labelId -> Label.id (onDelete: Cascade)
+  %% Reminder.taskId -> Task.id (onDelete: Cascade)
+  %% Comment.taskId -> Task.id (onDelete: Cascade)
+  %% Comment.userId -> User.id (onDelete: Cascade)
 ```
 
 ## Environment Variables
