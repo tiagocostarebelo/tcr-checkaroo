@@ -21,82 +21,110 @@ model User {
   firstName    String
   lastName     String
   email        String    @unique
-  passwordHash String
-  tasks        Task[]    @relation("UserTasks")
-  labels       Label[]   @relation("UserLabels")
-  comments     Comment[] @relation("UserComments")
+  passwordHash String    
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  tasks    Task[]    @relation("UserTasks")
+  labels   Label[]   @relation("UserLabels")
+  comments Comment[] @relation("UserComments")
 }
 
 model Task {
-  id           String      @id @default(uuid())
-  user         User        @relation("UserTasks", fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
+  id           String       @id @default(uuid())
   title        String
-  description  String
+  description  String?      // Made optional
   dueDate      DateTime?
-  isCompleted  Boolean     @default(false)
-  labels       TaskLabel[] @relation("TaskTaskLabels")
-  reminders    Reminder[]  @relation("TaskReminders")
-  comments     Comment[]   @relation("TaskComments")
-  parentTask   Task?       @relation("SubtaskParent", fields: [parentTaskId], references: [id], onDelete: Cascade)
+  isCompleted  Boolean      @default(false)
+  status       TaskStatus   @default(PENDING)  
+  priority     TaskPriority @default(MEDIUM)   
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  userId String
+  user   User   @relation("UserTasks", fields: [userId], references: [id], onDelete: Cascade)
+
   parentTaskId String?
-  subtasks     Task[]      @relation("SubtaskParent")
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  parentTask   Task?        @relation("SubtaskParent", fields: [parentTaskId], references: [id], onDelete: SetNull) // Subtasks become top-level if parent is deleted
+  subtasks     Task[]       @relation("SubtaskParent")
+
+  labels    TaskLabel[] @relation("TaskTaskLabels")
+  reminders Reminder[]  @relation("TaskReminders")
+  comments  Comment[]   @relation("TaskComments")
 
   @@index([userId])
   @@index([parentTaskId])
 }
 
 model Label {
-  id         String      @id @default(uuid())
-  user       User        @relation("UserLabels", fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
+  id         String   @id @default(uuid())
   name       String
   color      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt // Added
+
+  userId String
+  user   User   @relation("UserLabels", fields: [userId], references: [id], onDelete: Cascade)
+
   taskLabels TaskLabel[] @relation("LabelTaskLabels")
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
 
   @@index([userId])
 }
 
 model TaskLabel {
-  id      String @id @default(uuid())
-  task    Task   @relation("TaskTaskLabels", fields: [taskId], references: [id], onDelete: Cascade)
+  id      String @id @default(uuid()) 
   taskId  String
-  label   Label  @relation("LabelTaskLabels", fields: [labelId], references: [id], onDelete: Cascade)
   labelId String
 
-  @@unique([taskId, labelId])
+  task  Task  @relation("TaskTaskLabels", fields: [taskId], references: [id], onDelete: Cascade)
+  label Label @relation("LabelTaskLabels", fields: [labelId], references: [id], onDelete: Cascade)
+
+  // createdAt DateTime @default(now()) 
+
+  @@unique([taskId, labelId]) 
   @@index([taskId])
   @@index([labelId])
 }
 
 model Reminder {
   id        String   @id @default(uuid())
-  task      Task     @relation("TaskReminders", fields: [taskId], references: [id], onDelete: Cascade)
-  taskId    String
   remindAt  DateTime
   isSent    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt 
+
+  taskId String
+  task   Task   @relation("TaskReminders", fields: [taskId], references: [id], onDelete: Cascade)
 
   @@index([taskId])
 }
 
 model Comment {
   id        String   @id @default(uuid())
-  task      Task     @relation("TaskComments", fields: [taskId], references: [id], onDelete: Cascade)
-  taskId    String
-  user      User     @relation("UserComments", fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
   content   String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt 
+
+  taskId String
+  task   Task   @relation("TaskComments", fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation("UserComments", fields: [userId], references: [id], onDelete: Cascade) 
 
   @@index([taskId])
   @@index([userId])
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
