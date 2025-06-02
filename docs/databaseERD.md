@@ -3,10 +3,12 @@ erDiagram
 
   User {
     string id PK
+    string email "unique"
     string firstName
     string lastName
-    string email "unique"
-    string passwordHash
+    string displayName
+    string profileImageUrl
+    string authProvider
     datetime createdAt
     datetime updatedAt
   }
