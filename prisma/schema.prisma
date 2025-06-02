@@ -70,6 +70,7 @@ model Label {
 
   taskLabels TaskLabel[] @relation("LabelTaskLabels")
 
+  @@unique([name, userId], name: "name_userId")
   @@index([userId])
 }
 
