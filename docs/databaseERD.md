@@ -34,15 +34,14 @@ erDiagram
     datetime createdAt
     datetime updatedAt
     string userId FK
+    %% @@unique([name, userId]) ensures a user cannot have two labels with the same name
   }
 
   TaskLabel {
     string id PK
     string taskId FK
     string labelId FK
-    %% @@unique([taskId, labelId]) is implied by PK on (taskId, labelId) if we used composite PK.
-    %% With separate 'id PK' on TaskLabel, unique constraint still needed.
-    %% Mermaid doesn't have a direct way to show '@@unique' other than notes or PK.
+    %% @@unique([taskId, labelId]) ensures a task cannot have the same label applied multiple times
   }
 
   Reminder {
