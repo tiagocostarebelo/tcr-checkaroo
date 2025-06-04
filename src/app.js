@@ -33,7 +33,7 @@ app.get('/api/v1/users', async (req, res) => {
         console.log(error);
         res.status(500).json({ success: false, error: 'Something went wrong' });
     }
-})
+});
 
 
 // ROUTE TEST TO TASKS
@@ -46,6 +46,6 @@ app.get('/api/v1/tasks', async (req, res) => {
         console.log(error);
         res.status(500).json({ success: false, error: 'Something went wrong' });
     }
-})
+});
 
 export default app;
