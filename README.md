@@ -14,6 +14,7 @@ This app is built as a real-world project to showcase full-stack development ski
 - PostgreSQL database via Supabase
 - Authentication and user session handling
 - ORM modeling with Prisma
+- RESTful API design
 - Database ERD documentation with Mermaid.js
 - Future-proofing with features like subtasks, reminders, and PWA support
 
@@ -39,10 +40,12 @@ erDiagram
 
   User {
     string id PK
+    string email "unique"
     string firstName
     string lastName
-    string email "unique"
-    string passwordHash
+    string displayName
+    string profileImageUrl
+    string authProvider
     datetime createdAt
     datetime updatedAt
   }
@@ -58,7 +61,7 @@ erDiagram
     datetime createdAt
     datetime updatedAt
     string userId FK
-    string parentTaskId "nullable" FK
+    string parentTaskId "nullable"
   }
 
   Label {
@@ -68,15 +71,14 @@ erDiagram
     datetime createdAt
     datetime updatedAt
     string userId FK
+    %% @@unique([name, userId]) ensures a user cannot have two labels with the same name
   }
 
   TaskLabel {
     string id PK
     string taskId FK
     string labelId FK
-    %% @@unique([taskId, labelId]) is implied by PK on (taskId, labelId) if we used composite PK.
-    %% With separate 'id PK' on TaskLabel, unique constraint still needed.
-    %% Mermaid doesn't have a direct way to show '@@unique' other than notes or PK.
+    %% @@unique([taskId, labelId]) ensures a task cannot have the same label applied multiple times
   }
 
   Reminder {
@@ -118,24 +120,10 @@ erDiagram
   Task ||--o{ TaskLabel : "is labeled by"
   Task ||--o{ Reminder : "has"
   Task ||--o{ Comment : "has"
-  Task }o--|| Task : "is subtask of / has subtasks" %% Self-referencing for parent/subtasks
+  Task }o--|| Task : "is subtask of / has subtasks" 
+  %%Self-referencing for parent/subtasks
 
   Label ||--o{ TaskLabel : "labels"
-
-  %% Explicitly linking Enums to Task (though not a standard ERD relation, helps visualize)
-  %% Task .. TaskStatus : "uses status"
-  %% Task .. TaskPriority : "uses priority"
-  %% The above enum links might clutter. The type directly on Task attribute is often sufficient.
-
-  %% Notes on FKs and onDelete (Mermaid doesn't directly support this on relation lines)
-  %% Task.userId -> User.id (onDelete: Cascade)
-  %% Task.parentTaskId -> Task.id (onDelete: SetNull)
-  %% Label.userId -> User.id (onDelete: Cascade)
-  %% TaskLabel.taskId -> Task.id (onDelete: Cascade)
-  %% TaskLabel.labelId -> Label.id (onDelete: Cascade)
-  %% Reminder.taskId -> Task.id (onDelete: Cascade)
-  %% Comment.taskId -> Task.id (onDelete: Cascade)
-  %% Comment.userId -> User.id (onDelete: Cascade)
 ```
 
 ## Environment Variables
@@ -143,26 +131,33 @@ erDiagram
 A `.env.example` file is included. Copy it as `.env` and add your actual secrets:
 
 ```
-DATABASE_URL=postgresql://user:password@db.supabase.co:5432/dbname
-SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_URL=https://your-project.supabase.co
+PORT=your_PORT
+# Connect to Supabase via connection pooling with Supavisor.
+DATABASE_URL="postgres://postgres.[your-supabase-project]:[password]@aws-0-[aws-region].pooler.supabase.com:6543/postgres?pgbouncer=true"
+# Direct connection to the database. Used for migrations.
+DIRECT_URL="postgres://postgres.[your-supabase-project]:[password]@aws-0-[aws-region].pooler.supabase.com:5432/postgres"
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_DB_PASSWORD=your_db_password
+JWT_SECRET=your_jwt_secret_key
 
 ```
 Do not commit your `.env` file — it's listed in `.gitignore`.
 
 ## Future Plans
 
-* Add subtasks and comment functionality
-
 * Implement full user authentication (login/signup)
 
 * Add frontend (likely using React or Next.js)
 
+* Add test user accounts for demo purposes
+
 * Deploy backend and frontend
+
+* Add subtasks and comment functionality
 
 * Add Progressive Web App (PWA) support
 
-* Add test user accounts for demo purposes
 
 ## Contributing
 

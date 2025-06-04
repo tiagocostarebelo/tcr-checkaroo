@@ -24,7 +24,7 @@ erDiagram
     datetime createdAt
     datetime updatedAt
     string userId FK
-    string parentTaskId "nullable" FK
+    string parentTaskId "nullable"
   }
 
   Label {
@@ -83,22 +83,8 @@ erDiagram
   Task ||--o{ TaskLabel : "is labeled by"
   Task ||--o{ Reminder : "has"
   Task ||--o{ Comment : "has"
-  Task }o--|| Task : "is subtask of / has subtasks" %% Self-referencing for parent/subtasks
+  Task }o--|| Task : "is subtask of / has subtasks" 
+  %%Self-referencing for parent/subtasks
 
   Label ||--o{ TaskLabel : "labels"
-
-  %% Explicitly linking Enums to Task (though not a standard ERD relation, helps visualize)
-  %% Task .. TaskStatus : "uses status"
-  %% Task .. TaskPriority : "uses priority"
-  %% The above enum links might clutter. The type directly on Task attribute is often sufficient.
-
-  %% Notes on FKs and onDelete (Mermaid doesn't directly support this on relation lines)
-  %% Task.userId -> User.id (onDelete: Cascade)
-  %% Task.parentTaskId -> Task.id (onDelete: SetNull)
-  %% Label.userId -> User.id (onDelete: Cascade)
-  %% TaskLabel.taskId -> Task.id (onDelete: Cascade)
-  %% TaskLabel.labelId -> Label.id (onDelete: Cascade)
-  %% Reminder.taskId -> Task.id (onDelete: Cascade)
-  %% Comment.taskId -> Task.id (onDelete: Cascade)
-  %% Comment.userId -> User.id (onDelete: Cascade)
 ```
