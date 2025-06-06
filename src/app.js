@@ -23,8 +23,8 @@ app.get('/', (req, res) => {
 });
 
 // ROUTES REQUESTS
-app.use('/api/v1/users', userRoutes(prisma));
-app.use('/api/v1/tasks', taskRoutes(prisma));
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/tasks', taskRoutes);
 
 
 // GLOBAL ERROR HANDLING 

@@ -1,6 +1,6 @@
-import { supabase } from '../config/supabaseClient';
+import { supabase } from '../config/supabaseClient.js';
 
-async function authMiddleware(req, res, next) {
+export async function authMiddleware(req, res, next) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -57,5 +57,3 @@ async function authMiddleware(req, res, next) {
         });
     }
 }
-
-export default authMiddleware;
