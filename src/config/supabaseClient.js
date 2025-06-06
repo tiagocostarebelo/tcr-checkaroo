@@ -1,11 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
+dotenv.config();
+
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Critical Error: Supabase URL or Anon Key is missing from your .env file");
+if (!supabaseUrl) {
+    console.error("Critical Error: SUPABASE_URL is missing from your .env file");
+    process.exit(1);
+}
+if (!supabaseAnonKey) {
+    console.error("Critical Error: SUPABASE_ANON_KEY is missing from your .env file");
+    process.exit(1);
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -14,9 +21,5 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     }
 });
 
-if (supabaseUrl && supabaseAnonKey) {
-    console.log("Supabase client configured for backend")
-} else {
-    console.warn("Supabase client configured WITHOUT URL/ANON KEY - operations will fail.")
-}
+console.log("Supabase client configured for backend using Anon Key.");
 

@@ -3,8 +3,13 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '../generated/prisma/index.js';
 
+// IMPORT ROUTES
+import userRoutes from './routes/users.js';
+import taskRoutes from './routes/tasks.js';
+
 dotenv.config();
 const app = express();
+
 const prisma = new PrismaClient();
 
 // MIDDLEWARE
@@ -14,38 +19,21 @@ app.use(cors());
 
 // BASIC REQUEST
 app.get('/', (req, res) => {
-    res.json({ message: 'Welcome to the Checkaroo' });
-})
-
-
-// ROUTE TEST TO USERS
-app.get('/api/v1/users', async (req, res) => {
-    try {
-        const users = await prisma.user.findMany({
-            include: {
-                tasks: true,
-                labels: true
-            }
-        });
-        res.json({ success: true, data: users });
-        console.log(users)
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ success: false, error: 'Something went wrong' });
-    }
+    res.json({ message: 'Welcome to the Checkaroo API' });
 });
 
+// ROUTES REQUESTS
+app.use('/api/v1/users', userRoutes(prisma));
+app.use('/api/v1/tasks', taskRoutes(prisma));
 
-// ROUTE TEST TO TASKS
-app.get('/api/v1/tasks', async (req, res) => {
-    try {
-        const tasks = await prisma.task.findMany();
-        res.json({ success: true, data: tasks });
-        console.log(tasks)
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ success: false, error: 'Something went wrong' });
-    }
+
+// GLOBAL ERROR HANDLING 
+app.use((err, req, res, next) => {
+    console.error('Global Error Handler Caught:', err.stack || err);
+    res.status(err.status || 500).json({
+        success: false,
+        error: err.message || 'Something went wrong on the server!'
+    });
 });
 
 export default app;
